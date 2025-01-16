@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const healthProfileSchema=new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User", // Assuming you have a User model
+        required: true,
+    },
     age:{
         type:Number,
         required:true
@@ -14,7 +19,7 @@ const healthProfileSchema=new mongoose.Schema({
         required:true
     },
     bloodPressure:{
-        type:Number,
+        type:String,
         required:true
     },
     bloodGroup:{

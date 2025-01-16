@@ -4,6 +4,7 @@ import 'dotenv/config'
 import authRouter from "./routes/authRoutes.js";
 import { connectDB } from "./config/connectDB.js";
 import appRouter from "./routes/appointmentRoutes.js";
+import healthRouter from "./routes/healthRoutes.js";
 
 
 const app=express();
@@ -21,6 +22,7 @@ connectDB();
 
 app.use('/auth',authRouter);
 app.use('/appoint',appRouter);
+app.use('/health',healthRouter);
 
 app.get('/',(req,res)=>{
     res.send("Hello ji aagye")

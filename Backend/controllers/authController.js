@@ -12,7 +12,6 @@ const googleLogin=async (req,res)=>{
 
         const userRes=await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`)
         const {email,name,picture}=userRes.data;
-        console.log("data yaha tk");
         let user=await User.findOne({email});
         if(!user){
             user=await User({email,userName:name,image:picture})
