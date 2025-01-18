@@ -10,7 +10,7 @@ import healthRouter from "./routes/healthRoutes.js";
 const app=express();
 
 const corsOptions={
-    origin:'http://localhost:5173',
+    origin:'https://hospital-management-nine-wheat.vercel.app/',
     credentials:true,
 }
 
