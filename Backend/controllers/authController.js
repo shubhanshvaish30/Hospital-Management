@@ -7,10 +7,14 @@ const googleLogin=async (req,res)=>{
     try{
         const {code}=req.query;
         const googleRes=await oauth2client.getToken(code);
+        console.log("google res: " ,googleRes);
+        
 
         oauth2client.setCredentials(googleRes.tokens);
 
         const userRes=await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`)
+        console.log("user res: ",userRes);
+        
         const {email,name,picture}=userRes.data;
         let user=await User.findOne({email});
         if(!user){
