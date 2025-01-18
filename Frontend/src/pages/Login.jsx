@@ -31,6 +31,7 @@ const Login = () => {
     onSuccess: responseGoogle,
     onError: responseGoogle,
     flow: "auth-code",
+    redirectUri: "https://hospital-management-nine-wheat.vercel.app/dashboard",
   });
 
   return (
