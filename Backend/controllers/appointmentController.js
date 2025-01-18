@@ -1,4 +1,5 @@
 import Appointment from "../models/Appointment.js";
+import HealthRecord from "../models/HealthRecord.js";
 
 export const scheduleAppointment = async (req, res) => {
   try {
@@ -92,6 +93,46 @@ export const cancelAppointment = async (req, res) => {
       res.status(200).json({ appointments });
     } catch (error) {
       res.status(500).json({ message: 'Error fetching appointments', error });
+    }
+  };
+  
+  export const saveReports = async (req, res) => {
+    try {
+      const { id } = req.params; // Appointment ID
+      const { prescription, testReport } = req.body; // URLs from the frontend
+  
+      // Find the appointment by ID
+      const appointment = await Appointment.findById(id);
+      if (!appointment) {
+        return res.status(404).json({ success: false, message: 'Appointment not found' });
+      }
+  
+      appointment.prescription = prescription || appointment.prescription;
+      appointment.testReport = testReport || appointment.testReport;
+      await appointment.save();
+      // Create the new record object
+      const newRecord = {
+        appointmentId: appointment._id,
+        disease: appointment.disease,
+        prescription,
+        testReport,
+      };
+  
+      // Update or create a health record
+      const healthRecord = await HealthRecord.findOneAndUpdate(
+        { userId: appointment.userId }, // Find health record by userId
+        { $push: { records: newRecord } }, // Push the new record into the records array
+        { upsert: true, new: true } // Create a new document if none exists
+      );
+  
+      res.status(200).json({
+        success: true,
+        message: 'Reports saved successfully',
+        healthRecord,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ success: false, message: 'Server error' });
     }
   };
   

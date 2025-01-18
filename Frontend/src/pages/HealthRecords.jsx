@@ -1,41 +1,59 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FileText, Download, Calendar, User, ClipboardList } from "lucide-react";
+import axios from "axios";
 
 const HealthRecords = () => {
-  const records = [
-    {
-      id: 1,
-      type: "Medical Report",
-      date: "Feb 15, 2024",
-      doctor: "Dr. Sarah Smith",
-      category: "General Checkup",
-      icon: FileText,
-    },
-    {
-      id: 2,
-      type: "Lab Results",
-      date: "Feb 10, 2024",
-      doctor: "Dr. Michael Johnson",
-      category: "Blood Test",
-      icon: ClipboardList, // Changed to ClipboardList
-    },
-    {
-      id: 3,
-      type: "Prescription",
-      date: "Feb 5, 2024",
-      doctor: "Dr. Emily Brown",
-      category: "Medication",
-      icon: Calendar, // Changed to Calendar
-    },
-  ];
+  const user = JSON.parse(localStorage.getItem("userData"));
+  const userId = user._id;
+  const [records, setRecords] = useState([]);
+  const [categories, setCategories] = useState([
+    { name: "All Records", count: 0, icon: FileText },
+    { name: "Test Reports", count: 0, icon: ClipboardList },
+    { name: "Prescriptions", count: 0, icon: Calendar },
+  ]);
 
-  const categories = [
-    { name: "All Records", count: 15, icon: FileText },
-    { name: "Lab Tests", count: 8, icon: ClipboardList },
-    { name: "Prescriptions", count: 4, icon: Calendar },
-    { name: "Appointments", count: 3, icon: User }, // Changed to User
-  ];
+  useEffect(() => {
+    const fetchHealthRecords = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/health/records", {
+          params: { userId },
+        });
+
+        if (response.data.success) {
+          const formattedRecords = response.data.data.map((record) => ({
+            id: record.id,
+            type: record.disease,
+            prescription: record.prescription,
+            testReport: record.testReport,
+            date: new Date(record.date).toLocaleDateString(), // Use the 'date' from API response
+            category: "Medical Record",
+            icon: FileText,
+          }));
+
+          // Sort records by date (newest first)
+          formattedRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+          setRecords(formattedRecords);
+
+          // Update category counts
+          setCategories((prev) => [
+            { ...prev[0], count: formattedRecords.length },
+            { ...prev[1], count: formattedRecords.filter((r) => r.testReport).length },
+            { ...prev[2], count: formattedRecords.filter((r) => r.prescription).length },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching health records:", error);
+      }
+    };
+
+    fetchHealthRecords();
+  }, [userId]);
+
+  const handleDownload = (url, type) => {
+    window.open(url, "_blank");
+  };
 
   return (
     <motion.div
@@ -49,7 +67,7 @@ const HealthRecords = () => {
       </div>
 
       {/* Categories */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {categories.map((category, index) => {
           const Icon = category.icon;
           return (
@@ -77,7 +95,7 @@ const HealthRecords = () => {
       {/* Records List */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold">Recent Records</h2>
+          <h2 className="text-xl font-semibold">Medical Records</h2>
         </div>
         <div className="divide-y divide-gray-200">
           {records.map((record, index) => {
@@ -97,14 +115,31 @@ const HealthRecords = () => {
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-900">{record.type}</h3>
-                      <p className="text-sm text-gray-500">{record.doctor}</p>
+                      <p className="text-sm text-gray-500">Medical Record</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-4">
                     <span className="text-sm text-gray-500">{record.date}</span>
-                    <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                      <Download className="w-5 h-5 text-gray-600" />
-                    </button>
+                    <div className="flex space-x-2">
+                      {record.prescription && (
+                        <button
+                          onClick={() => handleDownload(record.prescription, "prescription")}
+                          className="p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center space-x-1"
+                        >
+                          <Download className="w-5 h-5 text-gray-600" />
+                          <span className="text-sm text-gray-600">Prescription</span>
+                        </button>
+                      )}
+                      {record.testReport && (
+                        <button
+                          onClick={() => handleDownload(record.testReport, "test")}
+                          className="p-2 hover:bg-gray-100 rounded-full transition-colors flex items-center space-x-1"
+                        >
+                          <Download className="w-5 h-5 text-gray-600" />
+                          <span className="text-sm text-gray-600">Test Report</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="mt-2">
@@ -133,14 +168,31 @@ const HealthRecords = () => {
           <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
           <div className="space-y-6">
             {records.map((record, index) => (
-              <div key={index} className="relative pl-10">
+              <div key={record.id} className="relative pl-10">
                 <div className="absolute left-0 top-2 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <record.icon className="w-4 h-4 text-blue-600" />
+                  <FileText className="w-4 h-4 text-blue-600" />
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">{record.type}</h3>
                   <p className="text-sm text-gray-500">{record.date}</p>
-                  <p className="text-sm text-gray-600 mt-1">{record.doctor}</p>
+                  <div className="flex space-x-4 mt-2">
+                    {record.prescription && (
+                      <button
+                        onClick={() => handleDownload(record.prescription, "prescription")}
+                        className="text-sm text-blue-600 hover:text-blue-800"
+                      >
+                        View Prescription
+                      </button>
+                    )}
+                    {record.testReport && (
+                      <button
+                        onClick={() => handleDownload(record.testReport, "test")}
+                        className="text-sm text-blue-600 hover:text-blue-800"
+                      >
+                        View Test Report
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Calendar, Clock, User, MapPin, Plus, X } from "lucide-react";
+import { Calendar, Clock, User, MapPin, Plus, X, FileText, Upload } from "lucide-react";
 import axios from "axios";
 
 const Appointments = () => {
@@ -17,6 +17,12 @@ const Appointments = () => {
   });
   const [hospitals, setHospitals] = useState([]);
   const [doctors, setDoctors] = useState([]);
+
+  // Generate time slots from 10 AM to 10 PM
+  const timeSlots = Array.from({ length: 13 }, (_, i) => {
+    const hour = i + 10;
+    return `${hour.toString().padStart(2, '0')}:00`;
+  });
 
   const fetchHospitals = async () => {
     try {
@@ -92,6 +98,13 @@ const Appointments = () => {
       alert("All fields are required");
       return;
     }
+
+    // Validate date is not in the past
+    const selectedDateTime = new Date(`${date}T${time}`);
+    if (selectedDateTime <= new Date()) {
+      alert("Please select a future date and time");
+      return;
+    }
   
     const selectedHospital = hospitals.find((h) => h.id === hospital);
     const selectedDoctor = doctors.find((d) => d.id === doctor);
@@ -141,7 +154,6 @@ const Appointments = () => {
 
   const openRescheduleModal = (appointment) => {
     setSelectedAppointment(appointment);
-    // Set current appointment date and time as default values
     const appointmentDate = new Date(appointment.date);
     setRescheduleData({
       date: appointmentDate.toISOString().split('T')[0],
@@ -154,12 +166,18 @@ const Appointments = () => {
     e.preventDefault();
     
     const { date, time } = rescheduleData;
-    const newDate = `${date}T${time}`;
+    const newDateTime = new Date(`${date}T${time}`);
+    
+    // Validate new date is not in the past
+    if (newDateTime <= new Date()) {
+      alert("Please select a future date and time");
+      return;
+    }
 
     try {
       const response = await axios.patch(
         `http://localhost:8080/appoint/reschedule/${selectedAppointment._id}`,
-        { newDate }
+        { newDate: `${date}T${time}` }
       );
 
       setAppointments(
@@ -187,6 +205,157 @@ const Appointments = () => {
     const date = new Date(dateStr);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+
+  const uploadToCloudinary = async (file, folder) => {
+    const cloudinaryUrl = `https://api.cloudinary.com/v1_1/dcvuklljt/upload`;
+  
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'upload_files');
+    formData.append('folder', folder);
+  
+    try {
+      const response = await axios.post(cloudinaryUrl, formData);
+      return response.data.secure_url;
+    } catch (error) {
+      console.error('Cloudinary Upload Error:', error);
+      throw new Error('Failed to upload file to Cloudinary');
+    }
+  };
+  
+  const handleUpload = async (e, appointmentId) => {
+    e.preventDefault();
+    const prescriptionFile = e.target.prescription.files[0];
+    const testReportFile = e.target.testReport.files[0];
+  
+    try {
+      let prescriptionUrl = null;
+      let testReportUrl = null;
+  
+      if (prescriptionFile) {
+        prescriptionUrl = await uploadToCloudinary(prescriptionFile, 'prescription');
+      }
+  
+      if (testReportFile) {
+        testReportUrl = await uploadToCloudinary(testReportFile, 'test');
+      }
+  
+      const response = await axios.post(
+        `http://localhost:8080/appoint/uploadDoc/${appointmentId}`,
+        {
+          prescription: prescriptionUrl,
+          testReport: testReportUrl,
+        }
+      );
+  
+      // Update the state or UI with the new health record
+      const updatedHealthRecord = response.data.healthRecord;
+      setAppointments((prevAppointments) =>
+        prevAppointments.map((appt) =>
+          appt._id === appointmentId
+            ? {
+                ...appt,
+                records: updatedHealthRecord.records, // Replace the records array
+              }
+            : appt
+        )
+      );
+  
+      alert('Reports saved successfully!');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to upload or save reports.');
+    }
+  };
+  
+
+  const renderDocumentSection = (appointment) => {
+    console.log(appointment);
+    
+    if (appointment.prescription || appointment.testReport) {
+      return (
+        <div className="mt-4 space-y-3">
+          <h4 className="font-medium text-gray-900">Uploaded Documents</h4>
+          <div className="space-y-2">
+            {appointment.prescription && (
+              <a
+                href={appointment.prescription}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 text-blue-600 hover:text-blue-800"
+              >
+                <FileText className="w-4 h-4" />
+                <span>View Prescription</span>
+              </a>
+            )}
+            {appointment.testReport && (
+              <a
+                href={appointment.testReport}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 text-blue-600 hover:text-blue-800"
+              >
+                <FileText className="w-4 h-4" />
+                <span>View Test Report</span>
+              </a>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <form
+        onSubmit={(e) => handleUpload(e, appointment._id)}
+        className="mt-4 space-y-3 bg-gray-50 p-4 rounded-lg"
+      >
+        <h4 className="font-medium text-gray-900">Upload Documents</h4>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Prescription
+          </label>
+          <div className="mt-1 flex items-center">
+            <input
+              type="file"
+              name="prescription"
+              accept="image/*"
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Test Report
+          </label>
+          <div className="mt-1 flex items-center">
+            <input
+              type="file"
+              name="testReport"
+              accept="image/*"
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+          </div>
+        </div>
+        <button
+          type="submit"
+          className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <Upload className="w-4 h-4" />
+          <span>Upload Documents</span>
+        </button>
+      </form>
+    );
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
+  useEffect(() => {
+    if (showBooking) {
+      fetchHospitals();
+    }
+  }, [showBooking]);
 
   const sortAppointments = (appts) => {
     return appts.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -218,21 +387,11 @@ const Appointments = () => {
     };
   };
 
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
-
-  useEffect(() => {
-    if (showBooking) {
-      fetchHospitals();
-    }
-  }, [showBooking]);
-
   const filteredAppointments = filterAppointments();
 
   const renderAppointmentCard = (appointment, index) => (
     <motion.div
-      key={appointment.id}
+      key={appointment._id}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
@@ -287,6 +446,7 @@ const Appointments = () => {
           </button>
         </div>
       )}
+      {activeTab === "expired" && renderDocumentSection(appointment)}
     </motion.div>
   );
 
@@ -310,7 +470,6 @@ const Appointments = () => {
         </button>
       </div>
 
-      {/* Tabs */}
       <div className="flex space-x-4 mb-6">
         <button
           onClick={() => setActiveTab('upcoming')}
@@ -344,7 +503,6 @@ const Appointments = () => {
         </button>
       </div>
 
-      {/* Appointments Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {filteredAppointments[activeTab].length > 0 ? (
           filteredAppointments[activeTab].map((appointment, index) =>
@@ -355,17 +513,16 @@ const Appointments = () => {
         )}
       </div>
 
-      {/* Booking Modal */}
       {showBooking && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl shadow-lg max-w-md w-full p-6 pt-10"
+            className="bg-white rounded-xl shadow-lg max-w-md w-full p-6"
           >
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Book Appointment</h2>
@@ -385,6 +542,7 @@ const Appointments = () => {
                   value={formData.hospital}
                   onChange={(e) => handleHospitalChange(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
                 >
                   <option value="">Select a hospital</option>
                   {hospitals.map((hospital) => (
@@ -402,6 +560,7 @@ const Appointments = () => {
                   value={formData.doctor}
                   onChange={(e) => setFormData({ ...formData, doctor: e.target.value })}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
                 >
                   <option value="">Select a doctor</option>
                   {doctors.map((doctor) => (
@@ -418,24 +577,29 @@ const Appointments = () => {
                 <input
                   type="date"
                   value={formData.date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, date: e.target.value })
-                  }
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Time
                 </label>
-                <input
-                  type="time"
+                <select
                   value={formData.time}
-                  onChange={(e) =>
-                    setFormData({ ...formData, time: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                  required
+                >
+                  <option value="">Select a time slot</option>
+                  {timeSlots.map((time) => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -443,11 +607,10 @@ const Appointments = () => {
                 </label>
                 <textarea
                   value={formData.reason}
-                  onChange={(e) =>
-                    setFormData({ ...formData, reason: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows="3"
+                  required
                 ></textarea>
               </div>
               <div className="flex space-x-3">
@@ -469,6 +632,7 @@ const Appointments = () => {
           </motion.div>
         </motion.div>
       )}
+
       {showReschedule && selectedAppointment && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -505,10 +669,8 @@ const Appointments = () => {
                 <input
                   type="date"
                   value={rescheduleData.date}
-                  onChange={(e) =>
-                    setRescheduleData({ ...rescheduleData, date: e.target.value })
-                  }
                   min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => setRescheduleData({ ...rescheduleData, date: e.target.value })}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
@@ -517,15 +679,19 @@ const Appointments = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   New Time
                 </label>
-                <input
-                  type="time"
+                <select
                   value={rescheduleData.time}
-                  onChange={(e) =>
-                    setRescheduleData({ ...rescheduleData, time: e.target.value })
-                  }
+                  onChange={(e) => setRescheduleData({ ...rescheduleData, time: e.target.value })}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
-                />
+                >
+                  <option value="">Select a time slot</option>
+                  {timeSlots.map((time) => (
+                    <option key={time} value={time}>
+                      {time}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="flex space-x-3 pt-4">
                 <button

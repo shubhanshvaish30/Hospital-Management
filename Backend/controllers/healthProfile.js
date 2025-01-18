@@ -1,4 +1,6 @@
 import HealthProfile from "../models/HealthProfile.js";
+import HealthRecord from '../models/HealthRecord.js';
+import Appointment from '../models/Appointment.js';
 
 // Controller to add health profile details for the first time
 export const addOrUpdateHealthProfile = async (req, res) => {
@@ -60,3 +62,36 @@ export const getHealthProfile = async (req, res) => {
         res.status(500).json({ message: "Error fetching health profile", error: error.message });
     }
 };
+
+export const getHealthRecords = async (req, res) => {
+  try {
+    const { userId } = req.query;
+
+    // Fetch the health record document for the user
+    const healthRecordDoc = await HealthRecord.findOne({ userId }).populate({
+      path: "records.appointmentId", // Populate the appointmentId
+      select: "date", // Fetch only the date field
+    });
+
+    if (!healthRecordDoc) {
+      return res.status(404).json({ success: false, message: "No health records found for the user" });
+    }
+
+    // Extract records and map the response
+    const response = healthRecordDoc.records.map((record) => ({
+      id: record._id,
+      appointmentId: record.appointmentId?._id,
+      disease: record.disease,
+      prescription: record.prescription,
+      testReport: record.testReport,
+      date: record.appointmentId?.date, // Extracted date from populated appointmentId
+      type: record.prescription ? "Prescription" : "Test Report", // Determine type dynamically
+    }));
+
+    res.status(200).json({ success: true, data: response });
+  } catch (error) {
+    console.error("Error fetching health records:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+

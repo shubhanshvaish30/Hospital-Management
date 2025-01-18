@@ -24,9 +24,15 @@ const appointmentSchema=new mongoose.Schema({
     },
     status:{
         type:String,
-        enum:['Upcoming','Completed'],
+        enum:['Upcoming','Cancelled','Expired'],
         default:'Upcoming'
     },
+    prescription:{
+        type:String
+    },
+    testReport:{
+        type:String
+    }
 });
 
 const Appointment=mongoose.model('Appointment',appointmentSchema);
