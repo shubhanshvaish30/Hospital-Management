@@ -5,7 +5,9 @@ import axios from 'axios';
 
 const googleLogin=async (req,res)=>{
     try{
+        console.log("hello");        
         const {code}=req.query;
+        console.log("hello: ",code);
         const googleRes=await oauth2client.getToken(code);
         console.log("google res: " ,googleRes);
         

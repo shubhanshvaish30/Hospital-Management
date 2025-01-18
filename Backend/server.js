@@ -8,11 +8,21 @@ import healthRouter from "./routes/healthRoutes.js";
 
 
 const app=express();
+const allowedOrigins = [
+    'https://hospital-management-nine-wheat.vercel.app',
+    'http://localhost:8080',
+];
 
-const corsOptions={
-    origin:'https://hospital-management-nine-wheat.vercel.app',
-    credentials:true,
-}
+const corsOptions = {
+    origin: (origin, callback) => {
+        if (allowedOrigins.includes(origin) || !origin) { // !origin allows requests from non-browser clients (like Postman)
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'), false);
+        }
+    },
+    credentials: true,
+};
 
 app.use(express.json());
 app.use(cors(corsOptions))
