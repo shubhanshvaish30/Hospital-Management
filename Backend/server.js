@@ -6,7 +6,6 @@ import { connectDB } from "./config/connectDB.js";
 import appRouter from "./routes/appointmentRoutes.js";
 import healthRouter from "./routes/healthRoutes.js";
 
-
 const app=express();
 const allowedOrigins = [
     'https://hospital-management-nine-wheat.vercel.app',

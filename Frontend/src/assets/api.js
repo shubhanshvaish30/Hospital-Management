@@ -5,7 +5,7 @@ const api=axios.create({
 });
 
 const googleAuth = (code) => {
-    return api.get(`/google?code=${code}&redirect_uri=https://hospital-management-3tyt.onrender.com/auth/google`);
+    return api.get(`/google?code=${code}`);
   };
 
 export default googleAuth;

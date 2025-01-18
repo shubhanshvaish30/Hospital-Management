@@ -12,7 +12,7 @@ const Navbar = () => {
   useEffect(() => {
     // Retrieve user data and token from localStorage
     const token = localStorage.getItem('authToken');
-    const storedUser = JSON.parse(localStorage.getItem('userData'));  // Assuming user data is stored as a JSON string
+    const storedUser = localStorage.getItem('userData')!='undefined'?JSON.parse(localStorage.getItem('userData')):localStorage.getItem('userData');  // Assuming user data is stored as a JSON string
     if (token && storedUser) {
       setUser(storedUser);  // Set user data if token exists
     }

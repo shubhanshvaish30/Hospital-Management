@@ -11,6 +11,8 @@ const Login = () => {
   const navigate = useNavigate(); // Hook for redirecting
   const responseGoogle = async (authResult) => {
     try {
+      console.log(authResult);
+      
       if (authResult['code']) {
         const result = await googleAuth(authResult['code']);
         console.log(result);
@@ -31,6 +33,7 @@ const Login = () => {
     onSuccess: responseGoogle,
     onError: responseGoogle,
     flow: "auth-code",
+    redirect_uri: "https://hospital-management-3tyt.onrender.com/auth/google"
   });
 
   return (
