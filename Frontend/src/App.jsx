@@ -17,6 +17,7 @@ function App() {
   async function getGoogleClientId() {
     try {
       const { data } = await axios.get(`https://hospital-management-3tyt.onrender.com/auth/getClientId`);
+      console.log(data);
       
       setGoogleClientId(data.clientId);
     } catch (error) {
