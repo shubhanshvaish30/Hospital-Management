@@ -81,7 +81,7 @@ const HospitalLocator = () => {
       animate={{ opacity: 1 }}
       className="max-w-7xl mx-auto px-4 py-8"
     >
-      <div className="mb-8">
+      <div className="mb-8 pt-10">
         <h1 className="text-3xl font-bold text-gray-900">Find Nearby Hospitals</h1>
         <p className="text-gray-600">Locate healthcare facilities in your area</p>
       </div>

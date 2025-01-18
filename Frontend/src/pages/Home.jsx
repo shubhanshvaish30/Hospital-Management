@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Activity, Shield, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import dashboardImage from '../assets/image.png';
 
 const Home = () => {
   const features = [
@@ -23,39 +24,61 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen pt-16"> {/* Added pt-16 to ensure content is below fixed navbar */}
-      {/* Hero Section */}
+    <div className="min-h-screen pt-16">
+      {/* Hero Section with Subtle Animation */}
       <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative bg-gradient-to-r from-blue-600 to-blue-400 text-white py-20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="relative bg-gradient-to-r from-blue-600 to-blue-400 text-white py-32 overflow-hidden"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+            backgroundSize: '40px 40px'
+          }}></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center">
-            <motion.h1
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-4xl md:text-6xl font-bold mb-6"
+              className="inline-block px-4 py-1 bg-white/10 rounded-full text-sm mb-6"
             >
-              Your Health, Our Priority
+              Healthcare Management Simplified
+            </motion.div>
+            
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
+            >
+              Your Health,
+              <br />
+              Our Priority
             </motion.h1>
+            
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="text-xl md:text-2xl mb-8"
+              className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto text-blue-50"
             >
               Manage your healthcare journey with our comprehensive platform
             </motion.p>
+            
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
+              transition={{ delay: 0.5 }}
+              className="space-x-4"
             >
               <Link
                 to="/login"
-                className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-blue-600 bg-white hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center px-8 py-3 bg-white text-blue-600 rounded-full font-medium hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               >
                 Get Started
                 <ArrowRight className="ml-2 w-5 h-5" />
@@ -65,8 +88,8 @@ const Home = () => {
         </div>
       </motion.section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-white">
+      {/* Features Section with Hover Effects */}
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {features.map((feature, index) => {
@@ -77,13 +100,13 @@ const Home = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 * index }}
-                  className="p-6 bg-gray-50 rounded-xl"
+                  className="group p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100"
                 >
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                    <Icon className="w-6 h-6 text-blue-600" />
+                  <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center mb-6 transform group-hover:rotate-6 transition-transform">
+                    <Icon className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
+                  <h3 className="text-xl font-bold mb-3 text-gray-900">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                 </motion.div>
               );
             })}
@@ -91,57 +114,68 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Dashboard Screenshot Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-3xl md:text-4xl font-semibold mb-6"
-          >
-            A Sneak Peek at Our Dashboard
-          </motion.h2>
+      {/* Dashboard Preview Section */}
+      <section className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-3xl md:text-4xl font-bold mb-6 text-gray-900"
+            >
+              A Sneak Peek at Our Dashboard
+            </motion.h2>
+            <p className="text-gray-600 text-lg">
+              Experience a modern, intuitive interface designed for seamless healthcare management
+            </p>
+          </div>
+          
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
+            className="relative"
           >
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-50 to-transparent h-8 -top-8"></div>
             <img
-              src="https://via.placeholder.com/1200x800" // Replace with your dashboard screenshot
+              src={dashboardImage}
               alt="Dashboard Screenshot"
-              className="mx-auto rounded-lg shadow-lg"
+              className="rounded-2xl shadow-2xl w-full"
             />
+            <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-transparent h-8 -bottom-8"></div>
           </motion.div>
         </div>
       </section>
 
       {/* Project Description Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-3xl md:text-4xl font-semibold mb-6"
-          >
-            About Our Project
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="text-lg text-gray-600 mb-8"
-          >
-            Our platform revolutionizes healthcare management by allowing users to easily track their health metrics, manage medical records, and book appointments with ease. With top-tier security features and real-time data analysis, we are committed to making healthcare more accessible, efficient, and secure for everyone.
-          </motion.p>
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-blue-600 bg-white hover:bg-gray-50 transition-colors"
-          >
-            Explore the Dashboard
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Link>
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mx-auto text-center">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-3xl md:text-4xl font-bold mb-6 text-gray-900"
+            >
+              About Our Project
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="text-lg text-gray-600 mb-8 leading-relaxed"
+            >
+              Our platform revolutionizes healthcare management by allowing users to easily track their health metrics, manage medical records, and book appointments with ease. With top-tier security features and real-time data analysis, we are committed to making healthcare more accessible, efficient, and secure for everyone.
+            </motion.p>
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+              Explore the Dashboard
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Link>
+          </div>
         </div>
       </section>
     </div>

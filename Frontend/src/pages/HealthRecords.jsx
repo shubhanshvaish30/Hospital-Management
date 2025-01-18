@@ -61,7 +61,7 @@ const HealthRecords = () => {
       animate={{ opacity: 1 }}
       className="max-w-7xl mx-auto px-4 py-8"
     >
-      <div className="mb-8">
+      <div className="mb-8 pt-10">
         <h1 className="text-3xl font-bold text-gray-900">Health Records</h1>
         <p className="text-gray-600">Access and manage your medical history</p>
       </div>

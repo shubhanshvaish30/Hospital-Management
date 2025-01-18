@@ -17,15 +17,12 @@ function App() {
   async function getGoogleClientId() {
     try {
       const { data } = await axios.get(`http://localhost:8080/auth/getClientId`);
-      console.log(data);
       
       setGoogleClientId(data.clientId);
     } catch (error) {
       console.error('Error fetching Google Client Id: ', error);
     }
   }
-
-  console.log(googleClientId);
   
   useEffect(() => {
     // Check if token exists in localStorage
@@ -35,7 +32,7 @@ function App() {
     }
     getGoogleClientId();
 
-  }, []);
+  }, [localStorage.getItem('authToken')]);
   console.log(authToken);
   
 

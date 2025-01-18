@@ -7,7 +7,7 @@ import axios from 'axios';
 const Dashboard = () => {
   const [stats, setStats] = useState({
     upcomingAppointments: 0,
-    recentRecords: 8,
+    recentRecords: 0,
     nearbyHospitals: 0
   });
 
@@ -42,13 +42,19 @@ const Dashboard = () => {
   }, []);
 
   const fetchDashboardData = async () => {
+    const userId=storedUser._id;
     try {
       // Fetch upcoming appointments
       const appointmentsResponse = await axios.get(`http://localhost:8080/appoint/user/${storedUser._id}`);
       const upcomingCount = appointmentsResponse.data.appointments.filter(
         apt => new Date(apt.date) > new Date() && apt.status !== 'Cancelled'
       ).length;
-
+      const recordsResponse=await axios.get(`http://localhost:8080/health/records`,{
+        params:{userId}
+      });
+      const recordCount=recordsResponse.data.data.length;
+      console.log(recordCount);
+      
       // Fetch nearby hospitals
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (position) => {
@@ -56,11 +62,12 @@ const Dashboard = () => {
           const hospitalsResponse = await axios.get(
             'https://hospital-d1nw.onrender.com/get/hospitals/near',
             {
-              params: { latitude, longitude, radius: 1000 }
+              params: { latitude, longitude, radius: 50000 }
             }
           );
           setStats(prev => ({
             ...prev,
+            recentRecords:recordCount,
             upcomingAppointments: upcomingCount,
             nearbyHospitals: hospitalsResponse.data.length
           }));
@@ -146,7 +153,7 @@ const Dashboard = () => {
       animate={{ opacity: 1 }}
       className="max-w-7xl mx-auto px-4 py-8"
     >
-      <div className="mb-8">
+      <div className="mb-8 pt-12">
         <h1 className="text-3xl font-bold text-gray-900">Welcome back, {storedUser.name}</h1>
         <p className="text-gray-600">Here's an overview of your health status</p>
       </div>
