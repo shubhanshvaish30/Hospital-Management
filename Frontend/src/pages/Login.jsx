@@ -33,7 +33,6 @@ const Login = () => {
     onSuccess: responseGoogle,
     onError: responseGoogle,
     flow: "auth-code",
-    redirect_uri: "https://hospital-management-3tyt.onrender.com/auth/google"
   });
 
   return (
