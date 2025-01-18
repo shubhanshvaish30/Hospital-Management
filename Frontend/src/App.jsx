@@ -16,7 +16,7 @@ function App() {
   const [googleClientId,setGoogleClientId]=useState("")
   async function getGoogleClientId() {
     try {
-      const { data } = await axios.get(`http://localhost:8080/auth/getClientId`);
+      const { data } = await axios.get(`https://hospital-management-3tyt.onrender.com/auth/getClientId`);
       
       setGoogleClientId(data.clientId);
     } catch (error) {

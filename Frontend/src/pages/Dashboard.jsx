@@ -45,11 +45,11 @@ const Dashboard = () => {
     const userId=storedUser._id;
     try {
       // Fetch upcoming appointments
-      const appointmentsResponse = await axios.get(`http://localhost:8080/appoint/user/${storedUser._id}`);
+      const appointmentsResponse = await axios.get(`https://hospital-management-3tyt.onrender.com/appoint/user/${storedUser._id}`);
       const upcomingCount = appointmentsResponse.data.appointments.filter(
         apt => new Date(apt.date) > new Date() && apt.status !== 'Cancelled'
       ).length;
-      const recordsResponse=await axios.get(`http://localhost:8080/health/records`,{
+      const recordsResponse=await axios.get(`https://hospital-management-3tyt.onrender.com/health/records`,{
         params:{userId}
       });
       const recordCount=recordsResponse.data.data.length;
@@ -80,7 +80,7 @@ const Dashboard = () => {
 
   const fetchHealthProfile = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/health/profile/${storedUser._id}`);
+      const response = await axios.get(`https://hospital-management-3tyt.onrender.com/health/profile/${storedUser._id}`);
       console.log(response.data.data);
       
       if (response.data.data) {
@@ -97,7 +97,7 @@ const Dashboard = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const endpoint = `http://localhost:8080/health/profile`; // Use a single endpoint for both create and update
+      const endpoint = `https://hospital-management-3tyt.onrender.com/health/profile`; // Use a single endpoint for both create and update
 
       const method = healthProfile ? 'post' : 'post'; // Always use 'POST' because backend handles the logic
 

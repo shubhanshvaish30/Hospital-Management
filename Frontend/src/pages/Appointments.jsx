@@ -83,7 +83,7 @@ const Appointments = () => {
 
   const fetchAppointments = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/appoint/user/${userId}`);
+      const response = await axios.get(`https://hospital-management-3tyt.onrender.com/appoint/user/${userId}`);
       setAppointments(response.data.appointments);
     } catch (error) {
       console.error("Error fetching appointments:", error);
@@ -115,7 +115,7 @@ const Appointments = () => {
     }
   
     try {
-      const response = await axios.post("http://localhost:8080/appoint/schedule", {
+      const response = await axios.post("https://hospital-management-3tyt.onrender.com/appoint/schedule", {
         userId,
         hospital: selectedHospital.name,
         doctor: selectedDoctor.name,
@@ -134,7 +134,7 @@ const Appointments = () => {
   
   const handleCancelAppointment = async (appointment) => {
     try {
-      await axios.patch(`http://localhost:8080/appoint/cancel/${appointment._id}`);
+      await axios.patch(`https://hospital-management-3tyt.onrender.com/appoint/cancel/${appointment._id}`);
       setAppointments(
         appointments.map((appt) =>
           appt.id === appointment._id ? { ...appt, status: "Cancelled" } : appt
@@ -176,7 +176,7 @@ const Appointments = () => {
 
     try {
       const response = await axios.patch(
-        `http://localhost:8080/appoint/reschedule/${selectedAppointment._id}`,
+        `https://hospital-management-3tyt.onrender.com/appoint/reschedule/${selectedAppointment._id}`,
         { newDate: `${date}T${time}` }
       );
 
@@ -241,7 +241,7 @@ const Appointments = () => {
       }
   
       const response = await axios.post(
-        `http://localhost:8080/appoint/uploadDoc/${appointmentId}`,
+        `https://hospital-management-3tyt.onrender.com/appoint/uploadDoc/${appointmentId}`,
         {
           prescription: prescriptionUrl,
           testReport: testReportUrl,

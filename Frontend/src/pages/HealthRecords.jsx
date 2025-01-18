@@ -16,7 +16,7 @@ const HealthRecords = () => {
   useEffect(() => {
     const fetchHealthRecords = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/health/records", {
+        const response = await axios.get("https://hospital-management-3tyt.onrender.com/health/records", {
           params: { userId },
         });
 
