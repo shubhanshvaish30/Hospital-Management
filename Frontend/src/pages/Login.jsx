@@ -1,39 +1,77 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Lock } from 'lucide-react';
-import { GoogleOAuthProvider, GoogleLogin, useGoogleLogin } from '@react-oauth/google';  // Google OAuth imports
-import { toast } from 'sonner';  // Assuming you're using `sonner` for toast notifications
-import googleAuth from '../assets/api.js';  // Assuming googleAuth is located here
-import { useNavigate } from 'react-router-dom';  // Import useNavigate for redirection
+import { useGoogleLogin } from '@react-oauth/google'; // Google OAuth imports
+import { toast } from 'sonner'; // Toast notifications
+import axios from 'axios'; // Axios for API calls
+import { useNavigate } from 'react-router-dom'; // Navigation hook
 
 const Login = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const navigate = useNavigate(); // Hook for redirecting
+  const [isLogin, setIsLogin] = useState(true); // Toggle between login and signup
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [userName, setUserName] = useState('');
+  const navigate = useNavigate(); // Hook for redirection
+
+  // Handle Google OAuth login
   const responseGoogle = async (authResult) => {
     try {
-      console.log(authResult);
-      
       if (authResult['code']) {
-        const result = await googleAuth(authResult['code']);
-        console.log(result);
+        const response = await axios.post('http://localhost:8080/auth/google', {
+          code: authResult['code'],
+        });
 
-        // Assuming your backend sends the token and user data after successful login/registration
-        const { token, user } = result.data; // Adjust the result structure as needed
-        localStorage.setItem('authToken', token); // Save the token in localStorage
-        localStorage.setItem('userData', JSON.stringify(user)); // Save user data in localStorage
-        navigate('/dashboard'); // Redirect to home page after successful login
+        const { token, user } = response.data;
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('userData', JSON.stringify(user));
+        navigate('/dashboard');
         toast.success('Successfully logged in with Google');
+      } else {
+        toast.error('Google authentication failed. Please try again.');
       }
     } catch (e) {
-      console.log(e);
+      console.error('Error during Google authentication:', e);
+      toast.error('Authentication error. Please try again later.');
     }
   };
 
   const googleLogin = useGoogleLogin({
     onSuccess: responseGoogle,
     onError: responseGoogle,
-    flow: "auth-code",
+    flow: 'auth-code',
+    redirect_uri: 'http://localhost:8080/auth/google/callback',
   });
+
+  // Handle form submit for signup or login
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const endpoint = isLogin
+        ? 'https://hospital-management-3tyt.onrender.com/auth/login'
+        : 'https://hospital-management-3tyt.onrender.com/auth/signup';
+
+      const payload = isLogin
+        ? { email, password }
+        : { email, password, userName };
+
+      const response = await axios.post(endpoint, payload);
+
+      const { success, message, token, user } = response.data;
+
+      if (success) {
+        toast.success(message);
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('userData', JSON.stringify(user));
+        navigate('/dashboard');
+      } else {
+        toast.error(message);
+      }
+    } catch (err) {
+      console.error('Error during form submission:', err);
+      toast.error('Something went wrong. Please try again.');
+    }
+  };
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -47,7 +85,7 @@ const Login = () => {
             {isLogin ? 'Sign in to your account' : 'Create your account'}
           </h2>
         </div>
-        <form className="mt-8 space-y-6">
+        <form className="mt-8 space-y-6" onSubmit={handleFormSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label htmlFor="email" className="sr-only">
@@ -62,6 +100,8 @@ const Login = () => {
                   name="email"
                   type="email"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                   placeholder="Email address"
                 />
@@ -80,11 +120,35 @@ const Login = () => {
                   name="password"
                   type="password"
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                   placeholder="Password"
                 />
               </div>
             </div>
+            {!isLogin && (
+              <div>
+                <label htmlFor="userName" className="sr-only">
+                  Username
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="userName"
+                    name="userName"
+                    type="text"
+                    required
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                    placeholder="Username"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
